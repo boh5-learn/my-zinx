@@ -2,6 +2,7 @@ package znet
 
 import (
 	"fmt"
+	"io"
 	"my-zinx/ziface"
 	"net"
 )
@@ -53,10 +54,16 @@ func (s *Server) Start() {
 				for {
 					buf := make([]byte, 512)
 					cnt, err := conn.Read(buf)
+					if err == io.EOF {
+						fmt.Println("conn closed")
+						break
+					}
 					if err != nil {
 						fmt.Println("recv buf err", err)
 						continue
 					}
+
+					fmt.Printf("recv client buf: %s, cnt: %d\n", buf[:cnt], cnt)
 
 					// 回显功能
 					if _, err := conn.Write(buf[0:cnt]); err != nil {
