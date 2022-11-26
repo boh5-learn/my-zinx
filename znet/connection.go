@@ -7,6 +7,19 @@ import (
 	"net"
 )
 
+// NewConnection 初始化连接
+func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Connection {
+	c := &Connection{
+		Conn:     conn,
+		ConnID:   connID,
+		isClosed: false,
+		ExitChan: make(chan bool, 1),
+		Router:   router,
+	}
+
+	return c
+}
+
 // Connection 连接模块
 type Connection struct {
 	// 当前连接的 socket
@@ -15,10 +28,10 @@ type Connection struct {
 	ConnID uint32
 	// 当前连接状态
 	isClosed bool
-	// 当前连接绑定的业务处理方法
-	handleAPI ziface.HandleFunc
 	// 告知当前连接已经退出的 channel
 	ExitChan chan bool
+	// 该连接的 Router
+	Router ziface.IRouter
 }
 
 // StartReader 读业务方法
@@ -40,11 +53,18 @@ func (c *Connection) StartReader() {
 			continue
 		}
 
-		// 调用当前连接所绑定的 HandleAPI
-		if err := c.handleAPI(c.Conn, buf, cnt); err != nil {
-			fmt.Printf("Error handing conn, connID: %d, err: %s", c.ConnID, err)
-			break
+		// 得到 Request
+		req := Request{
+			conn: c,
+			data: buf[:cnt],
 		}
+
+		// 从 Router 中调用业务
+		go func(request ziface.IRequest) {
+			c.Router.PreHandle(request)
+			c.Router.Handle(request)
+			c.Router.PostHandle(request)
+		}(&req)
 	}
 }
 
@@ -92,17 +112,4 @@ func (c *Connection) RemoteAddr() net.Addr {
 func (c *Connection) Send(data []byte) error {
 	// TODO implement me
 	panic("implement me")
-}
-
-// NewConnection 初始化连接
-func NewConnection(conn *net.TCPConn, connID uint32, callback ziface.HandleFunc) *Connection {
-	c := &Connection{
-		Conn:      conn,
-		ConnID:    connID,
-		isClosed:  false,
-		handleAPI: callback,
-		ExitChan:  make(chan bool, 1),
-	}
-
-	return c
 }

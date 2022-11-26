@@ -8,4 +8,6 @@ type IServer interface {
 	Stop()
 	// Serve 运行服务器
 	Serve()
+	// AddRouter 路由功能：给当前服务提供注册 Router 的方法
+	AddRouter(router IRouter)
 }
