@@ -3,6 +3,7 @@ package znet
 import (
 	"fmt"
 	"io"
+	"my-zinx/utils"
 	"my-zinx/ziface"
 	"net"
 )
@@ -41,8 +42,8 @@ func (c *Connection) StartReader() {
 	defer c.Stop()
 
 	for {
-		// 读取客户端数据到 buf 中，最大 512 字节
-		buf := make([]byte, 512)
+		// 读取客户端数据到 buf 中
+		buf := make([]byte, utils.GlobalObject.MaxPackageSize)
 		cnt, err := c.Conn.Read(buf)
 		if err == io.EOF {
 			fmt.Println("EOF")
