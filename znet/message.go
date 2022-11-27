@@ -1,5 +1,14 @@
 package znet
 
+// NewMessage 初始化 Message
+func NewMessage(id uint32, data []byte) *Message {
+	return &Message{
+		ID:      id,
+		DataLen: uint32(len(data)),
+		Data:    data,
+	}
+}
+
 type Message struct {
 	ID      uint32 // 消息 ID
 	DataLen uint32 // 消息长度

@@ -45,16 +45,16 @@ func TestDataPack(t *testing.T) {
 					return
 				}
 
-				// 有 data，则读 data
+				// 有 msg，则读 msg
 				if msgHead.GetLen() > 0 {
 					msg := msgHead.(*Message)
-					// 开辟 data 空间
+					// 开辟 msg 空间
 					msg.Data = make([]byte, msg.GetLen())
 
-					// 读 data
+					// 读 msg
 					_, err := io.ReadFull(conn, msg.Data)
 					if err != nil {
-						t.Error("Read data err:", err)
+						t.Error("Read msg err:", err)
 						return
 					}
 
@@ -100,7 +100,7 @@ func TestDataPack(t *testing.T) {
 	// 一起发送
 	_, err = conn.Write(sendData1)
 	if err != nil {
-		t.Error("Client send data err:", err)
+		t.Error("Client send msg err:", err)
 	}
 
 	select {}
